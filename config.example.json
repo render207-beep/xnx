@@ -1,0 +1,7 @@
+{
+  "auth_token": "COOKIE_auth_token_DE_x.com",
+  "ct0": "COOKIE_ct0_DE_x.com",
+  "bearer": "BEARER_PUBLICO_DEL_JS_DE_x.com",
+  "home_timeline_query_id": "ID_DE_HomeTimeline_DESDE_DEVTOOLS",
+  "insecure_tls": false
+}
