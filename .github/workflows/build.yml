@@ -1,0 +1,51 @@
+name: Build XNX
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkita64:latest
+    steps:
+      - name: Dependencias del sistema
+        run: |
+          apt-get update
+          apt-get install -y git cmake curl zip ca-certificates
+
+      - uses: actions/checkout@v4
+
+      - name: Paquetes de devkitPro
+        run: |
+          dkp-pacman -Syu --noconfirm
+          dkp-pacman -S --noconfirm switch-dev switch-curl switch-zlib \
+            switch-glfw switch-mesa switch-glad switch-libdrm_nouveau
+
+      - name: Descargar Borealis
+        run: |
+          if [ ! -d third_party/borealis/library ]; then
+            rm -rf third_party/borealis
+            git clone --recursive https://github.com/xfangfang/borealis third_party/borealis
+          fi
+
+      - name: Recursos (romfs)
+        run: |
+          mkdir -p resources
+          curl -L -o resources/cacert.pem https://curl.se/ca/cacert.pem
+          if [ -d third_party/borealis/resources ]; then
+            cp -r third_party/borealis/resources resources/borealis
+          fi
+
+      - name: Compilar
+        run: |
+          export DEVKITPRO=/opt/devkitpro
+          cmake -B build_switch -DPLATFORM_SWITCH=ON \
+            -DCMAKE_TOOLCHAIN_FILE=$DEVKITPRO/cmake/Switch.cmake
+          make -C build_switch XNX.nro -j2
+
+      - name: Subir .nro
+        uses: actions/upload-artifact@v4
+        with:
+          name: XNX-nro
+          path: build_switch/XNX.nro
